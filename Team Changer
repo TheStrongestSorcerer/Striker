@@ -1,0 +1,83 @@
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local ToggleButton = Instance.new("TextButton")
+local Teams = {"Home", "Away"}
+local Positions = {"CF", "CM", "GK", "RW", "LW"}
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Name = "FancyTeamSelector"
+
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 600, 0, 400)
+Frame.Position = UDim2.new(0.5, -300, 0.5, -200)
+Frame.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
+Frame.BorderSizePixel = 0
+
+local Gradient = Instance.new("UIGradient", Frame)
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.new(0.2, 0.2, 0.4)),
+    ColorSequenceKeypoint.new(1, Color3.new(0.1, 0.1, 0.2))
+}
+
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 10)
+
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 100, 0, 50)
+ToggleButton.Position = UDim2.new(1, -120, 0, 20)
+ToggleButton.Text = "Toggle"
+ToggleButton.TextColor3 = Color3.new(1, 1, 1)
+ToggleButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+ToggleButton.BorderSizePixel = 0
+
+local ToggleGradient = Instance.new("UIGradient", ToggleButton)
+ToggleGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.new(0.4, 0.4, 0.8)),
+    ColorSequenceKeypoint.new(1, Color3.new(0.2, 0.2, 0.6))
+}
+
+local ToggleCorner = Instance.new("UICorner", ToggleButton)
+ToggleCorner.CornerRadius = UDim.new(0, 10)
+
+local isFrameVisible = true
+ToggleButton.MouseButton1Click:Connect(function()
+    isFrameVisible = not isFrameVisible
+    Frame.Visible = isFrameVisible
+end)
+
+local PositionOffsets = {
+    CF = {0, 0},
+    CM = {0, 70},
+    GK = {0, 140},
+    RW = {100, 0},
+    LW = {-100, 0}
+}
+
+local function createButton(team, position, xOffset, yOffset)
+    local Button = Instance.new("TextButton")
+    Button.Parent = Frame
+    Button.Size = UDim2.new(0, 100, 0, 50)
+    Button.Position = UDim2.new(0.5, xOffset + (team == "Home" and -150 or 150), 0.5, yOffset)
+    Button.Text = team .. " " .. position
+    Button.TextColor3 = Color3.new(1, 1, 1)
+    Button.Font = Enum.Font.Arcade
+    Button.TextScaled = true
+    Button.BackgroundColor3 = team == "Home" and Color3.new(0, 1, 1) or Color3.new(1, 0, 0)
+    
+    local ButtonCorner = Instance.new("UICorner", Button)
+    ButtonCorner.CornerRadius = UDim.new(0, 8)
+
+    Button.MouseButton1Click:Connect(function()
+        local args = {
+            [1] = team,
+            [2] = position
+        }
+        game:GetService("ReplicatedStorage").Packages.Knit.Services.TeamService.RE.Select:FireServer(unpack(args))
+    end)
+end
+
+for _, team in ipairs(Teams) do
+    for position, offsets in pairs(PositionOffsets) do
+        createButton(team, position, offsets[1], offsets[2])
+    end
+end
